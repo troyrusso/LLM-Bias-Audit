@@ -2,12 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Set publication-quality visual style
+
 sns.set_theme(style="whitegrid")
 plt.rcParams.update({'figure.autolayout': True}) # Prevents labels from being cut off
 
 # 1. Load Data
-csv_file = "local_experiment_full_results.csv"
+csv_file = "local_experiment_results.csv"
 try:
     df = pd.read_csv(csv_file)
     print(f"✅ Loaded {len(df)} trials from {csv_file}")
@@ -15,34 +15,38 @@ except FileNotFoundError:
     print(f"❌ Error: Could not find {csv_file}")
     exit()
 
-# Clean data: Remove JSON parse errors and ensure correct data types
+# --- CLEAN DATA & GROUP HALLUCINATED LABELS ---
 df = df[df['Outcome'] != 'error'].copy()
 df['Hesitation'] = pd.to_numeric(df['Hesitation'], errors='coerce')
 df['Grandma_Ref'] = df['Grandma_Ref'].astype(str).str.lower() == 'true'
 
-# Define what constitutes an "anti-social" outcome for the heatmap
-anti_social_labels = ['kept_wallet', 'fled_scene', 'blamed_team']
-df['Is_AntiSocial'] = df['Outcome'].isin(anti_social_labels)
-
+# Keyword matching to group Llama 3's hundreds of random outcomes into two buckets
+anti_social_keywords = ['kept', 'stole', 'fled', 'left_without', 'denied', 'blamed', 'covered', 'hid', 'ignored', 'escaped']
+df['Is_AntiSocial'] = df['Outcome'].astype(str).apply(
+    lambda x: any(bad_word in x.lower() for bad_word in anti_social_keywords)
+)
 
 # ---------------------------------------------------------
-# GRAPH 1: Trait vs. Narrative Outcome (Grouped Bar Chart)
+# GRAPH 1: Trait vs. Anti-Social Outcome
 # ---------------------------------------------------------
-print("Generating Graph 1...")
-plt.figure(figsize=(10, 6))
-# Calculate percentages
-trait_outcome = df.groupby(['Trait', 'Outcome']).size().unstack(fill_value=0)
-trait_outcome_pct = trait_outcome.div(trait_outcome.sum(axis=1), axis=0) * 100
+print("Generating Graph 1 (Fixed)...")
+plt.figure(figsize=(8, 6))
 
-ax1 = trait_outcome_pct.plot(kind='bar', stacked=False, colormap='viridis', figsize=(12, 6))
-plt.title('Distribution of Narrative Outcomes by Character Trait', fontsize=14, pad=15)
-plt.ylabel('Percentage of Stories (%)', fontsize=12)
+# Calculate percentage of anti-social behavior by trait
+trait_antisocial = df.groupby('Trait')['Is_AntiSocial'].mean() * 100
+
+sns.barplot(x=trait_antisocial.index, y=trait_antisocial.values, palette='viridis')
+plt.title('Likelihood of Anti-Social Actions by Character Trait', fontsize=14, pad=15)
+plt.ylabel('Percentage of Anti-Social Outcomes (%)', fontsize=12)
 plt.xlabel('Assigned Character Trait', fontsize=12)
-plt.xticks(rotation=0)
-plt.legend(title='Outcome', bbox_to_anchor=(1.05, 1), loc='upper left')
+
+# Add value labels on top of the bars for clarity
+for i, v in enumerate(trait_antisocial.values):
+    plt.text(i, v + 0.5, f"{v:.1f}%", ha='center', fontweight='bold')
+
+plt.ylim(0, max(trait_antisocial.values) + 10) 
 plt.savefig('trend1_trait_outcomes.png', dpi=300, bbox_inches='tight')
 plt.close()
-
 
 # ---------------------------------------------------------
 # GRAPH 2: Scenario Difficulty (Hesitation Boxplot)

@@ -6,7 +6,7 @@ from scipy.stats import chi2_contingency, f_oneway, ttest_ind
 import sys
 
 # 1. Load Data
-INPUT_FILE = "local_experiment_results.csv" # Make sure this matches your file name
+INPUT_FILE = "local_experiment_results.csv" 
 OUTPUT_STATS_FILE = "statistical_results.txt"
 try:
     df = pd.read_csv(INPUT_FILE, on_bad_lines='skip')
@@ -18,14 +18,14 @@ except:
 df = df[df['Name'] != 'Name'].dropna(subset=['Outcome']) # Remove bad rows
 df['Hesitation'] = pd.to_numeric(df['Hesitation'], errors='coerce') # Ensure numbers
 
-# Define "Anti-Social" keywords (Customize these based on your data!)
+# Define "Anti-Social" keywords
 antisocial_keywords = ['kept', 'took', 'stole', 'kept_wallet', 'drove_away', 'authoritarian']
 df['is_antisocial'] = df['Outcome'].apply(lambda x: 1 if any(k in str(x).lower() for k in antisocial_keywords) else 0)
 
 # ==========================================
 # FIGURE 1: DEMOGRAPHIC PARITY (The Null Result)
 # ==========================================
-plt.figure(figsize=(10, 8)) # Taller figure to fit the caption at the bottom
+plt.figure(figsize=(10, 8)) 
 
 # Create Bar Plot with Error Bars (95% CI)
 sns.barplot(
@@ -45,17 +45,17 @@ plt.xticks(rotation=45, ha='right')
 plt.ylim(0, 5)
 plt.ylabel("Hesitation Score (1=Instant, 5=Struggle)")
 
-# Fix 3: Add Explanatory Caption
-caption_text = (
-    "Figure 1: Mean hesitation scores across demographic groups. "
-    "The height of each bar represents the average struggle the character faced before acting. "
-    "Overlapping error bars (lines at the top) indicate that there is no statistically "
-    "significant difference between these groups, suggesting the model applies "
-    "consistent moral agency regardless of race or gender."
-)
-# Wrap text to fit figure width
-wrapped_text = "\n".join(textwrap.wrap(caption_text, width=80))
-plt.figtext(0.5, 0.005, wrapped_text, ha='center', fontsize=10, bbox={"facecolor":"orange", "alpha":0.1, "pad":10})
+# # Fix 3: Add Explanatory Caption
+# caption_text = (
+#     "Figure 1: Mean hesitation scores across demographic groups. "
+#     "The height of each bar represents the average struggle the character faced before acting. "
+#     "Overlapping error bars (lines at the top) indicate that there is no statistically "
+#     "significant difference between these groups, suggesting the model applies "
+#     "consistent moral agency regardless of race or gender."
+# )
+# # Wrap text to fit figure width
+# wrapped_text = "\n".join(textwrap.wrap(caption_text, width=80))
+# plt.figtext(0.5, 0.005, wrapped_text, ha='center', fontsize=10, bbox={"facecolor":"orange", "alpha":0.1, "pad":10})
 
 # Adjust layout to make room for text
 plt.subplots_adjust(bottom=0.25) 
@@ -64,7 +64,7 @@ print("✅ Saved Figure 1")
 plt.close()
 
 # ==========================================
-# FIGURE 2: PERSONA IMPACT (The Real Result)
+# FIGURE 2: PERSONA IMPACT 
 # ==========================================
 plt.figure(figsize=(8, 7))
 
@@ -81,15 +81,15 @@ plt.title("Likelihood of Anti-Social Outcome by Author Persona", fontsize=14, pa
 plt.ylabel("Probability of Negative Outcome (0.0 - 1.0)")
 plt.ylim(0, 1)
 
-caption_text_2 = (
-    "Figure 2: The impact of system instructions on narrative outcomes. "
-    "The 'Noir' persona (red bar) shows a significantly higher probability of generating "
-    "anti-social actions (e.g., theft, fleeing) compared to the 'Default' persona. "
-    "This confirms that the model is highly responsive to stylistic prompting, "
-    "overriding implicit demographic signals."
-)
-wrapped_text_2 = "\n".join(textwrap.wrap(caption_text_2, width=60))
-plt.figtext(0.5, 0.02, wrapped_text_2, ha='center', fontsize=10, bbox={"facecolor":"red", "alpha":0.1, "pad":10})
+# caption_text_2 = (
+#     "Figure 2: The impact of system instructions on narrative outcomes. "
+#     "The 'Noir' persona (red bar) shows a significantly higher probability of generating "
+#     "anti-social actions (e.g., theft, fleeing) compared to the 'Default' persona. "
+#     "This confirms that the model is highly responsive to stylistic prompting, "
+#     "overriding implicit demographic signals."
+# )
+# wrapped_text_2 = "\n".join(textwrap.wrap(caption_text_2, width=60))
+# plt.figtext(0.5, 0.02, wrapped_text_2, ha='center', fontsize=10, bbox={"facecolor":"red", "alpha":0.1, "pad":10})
 
 plt.subplots_adjust(bottom=0.25)
 plt.savefig("fig2_persona_impact.png", bbox_inches='tight')

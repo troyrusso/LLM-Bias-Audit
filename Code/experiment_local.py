@@ -7,7 +7,7 @@ import constants
 
 # --- 1. LOAD LOCAL MODEL ---
 print("Loading Llama 3 8B into GPU memory...")
-# Using the exact backend required for your specific hardware
+# Use the exact backend required for your specific hardware
 model = GPT4All("Meta-Llama-3-8B-Instruct.Q4_0.gguf", device='kompute:NVIDIA GeForce RTX 5070 Ti')
 print("Model loaded successfully!")
 
