@@ -59,3 +59,6 @@ The output CSV (`local_experiment_results.csv`) utilizes the following columns:
 * `Scenario`: The moral dilemma (Wallet, Team, Car_Accident).
 * `Hesitation`: The 1–5 score extracted in Stage 2.
 * `Outcome`: The raw string outcome and binary classification.
+
+## 7. Sample Data:
+
