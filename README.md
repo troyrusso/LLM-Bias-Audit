@@ -1,86 +1,87 @@
-## 📄 Paper Summary: Intersectional Bias in LLM Narrative Generation
-
-**[Read the Full Report](Writing/ProjectReportStat496.pdf)** 
-### Abstract
-This study audits the `Meta-Llama-3-8B-Instruct` model to determine if it exhibits intersectional bias when generating narratives around moral dilemmas. Using a two-stage LLM-as-a-Judge pipeline, we evaluated 2,160 independent trials to investigate whether explicit stylistic instructions (authorial personas) can override baseline safety training and expose latent demographic disparities.
-
-### Methodology
-**Stage 1 (Generation):** Prompted the generation model (temperature = 1.0) with varying intersectional demographic signals (names associated with White, Black, Asian, and Hispanic demographics) and authorial personas (Default, Noir, Utopian) across three distinct moral scenarios (Wallet, Team, Car_Accident).
-**Stage 2 (Evaluation):** Utilized a fresh context session acting as an objective annotator (temperature = 0.1) to extract a procedural "Hesitation Score" (1 to 5) and classify the final narrative outcome as either pro-social or anti-social.
-
-### Key Findings
-1. **Contextual & Situational Vulnerability:** The model's safety alignment proved highly dependent on the scenario context. It exhibited flawless safety compliance in corporate leadership scenarios with a 0.0% failure rate, but its safety rails collapsed in isolated property scenarios (finding a wallet), generating theft narratives up to 59.6% of the time under the Default persona.
-2. **Trait vs. Demographic Weighting:** Under baseline conditions, the LLM successfully ignored implicit demographic cues, demonstrating equal procedural hesitation across all groups (ANOVA p=0.099). It instead relied on psychological descriptors, doubling the rate of anti-social outcomes for characters explicitly labeled "Impulsive" (29.3%) compared to "Calculated" (14.0%).
-3. **Jailbreak Vulnerability & Latent Bias:** When the "Noir" persona was applied to bypass baseline behavioral guardrails, severe intersectional biases surfaced. Under this condition, the model disproportionately assigned anti-social outcomes to Black Males (32.6%) and Hispanic Females (30.3%), effectively doubling their rate of criminality compared to the White Male control group (15.3%).
-
-### Visual Results
-
-**Figure 1: Demographic Hesitation Trends**
-*(Equal banding indicates uniform moral deliberation patterns globally, confirming strict procedural fairness in both mean and variance)*
-![Demographic Hesitation Graph](fig1_demographic_hesitation.png) 
-
-**Figure 2: Vulnerability Heatmap**
-*(Displays the collapse of safety alignment in isolated scenarios versus corporate settings)*
-![Vulnerability Heatmap](trend4_vulnerability_heatmap.png) 
-
 # Intersectional Bias in LLM Narrative Generation
 
-This repository contains the code and data for an audit study of the **Meta-Llama-3-8B-Instruct** model. The project investigates how authorial personas and implicit demographic signals influence narrative outcomes and procedural hesitation in moral scenarios.
+Statistics capstone (STAT 496), University of Washington, Winter 2026.
+Team: Troy Russo, Jarin Synnestvedt, Hejiong Zhao. My role: lead developer (generation and evaluation pipeline, statistical analysis).
 
-## 1. Project Overview
+**[Read the full report](Writing/ProjectReportStat496.pdf)**
+
+This repository contains the code and data for an audit of the **Meta-Llama-3-8B-Instruct** model. We test whether authorial personas and implicit demographic signals change narrative outcomes and procedural hesitation in moral scenarios.
+
+---
+
+## Summary
+
+### Abstract
+We audit `Meta-Llama-3-8B-Instruct` for intersectional bias when it writes narratives about moral dilemmas. Using a two-stage LLM-as-a-judge pipeline over 2,160 independent trials, we test whether explicit stylistic instructions (authorial personas) can override baseline safety training and expose demographic disparities.
+
+### Methodology
+**Stage 1 (Generation):** The generation model (temperature 1.0) was prompted with names associated with White, Black, Asian, and Hispanic demographics, crossed with three authorial personas (Default, Noir, Utopian) and three moral scenarios (Wallet, Team, Car_Accident).
+
+**Stage 2 (Evaluation):** A fresh session acting as an annotator (temperature 0.1) assigned each narrative a procedural "Hesitation Score" (1 to 5) and classified the outcome as pro-social or anti-social.
+
+### Key findings
+1. **Scenario matters most.** In the corporate leadership scenario the model produced no anti-social outcomes (0.0%). In the isolated property scenario (finding a wallet), it wrote theft narratives in up to 59.6% of trials under the Default persona.
+2. **Traits, not demographics, drove baseline outcomes.** Under the Default persona we found no significant difference in hesitation across demographic groups (ANOVA p = 0.099). Characters labeled "Impulsive" received anti-social outcomes about twice as often as those labeled "Calculated" (29.3% vs. 14.0%).
+3. **A persona exposed demographic disparities.** Under the Noir persona, anti-social outcomes were assigned to Black male characters in 32.6% of trials and Hispanic female characters in 30.3%, about double the rate for White male characters (15.3%). [ADD pairwise chi-square p-values from `pairwisetest.py`]
+
+### Figures
+
+**Figure 1: Hesitation by demographic group.** Distribution of hesitation scores by group under baseline conditions.
+![Demographic Hesitation Graph](fig1_demographic_hesitation.png)
+
+**Figure 2: Anti-social outcome rates by scenario and persona.**
+![Vulnerability Heatmap](trend4_vulnerability_heatmap.png)
+
+---
+
+## 1. Project overview
 * **Model:** Meta-Llama-3-8B-Instruct.Q4_0.gguf
-* **Sample Size:** N = 2,160 independent trials.
-* **Architecture:** Two-stage "LLM-as-a-Judge" pipeline.
-* **Core Variables:** Demographic Signal (Name), Authorial Persona, Scenario, Hesitation Score, and Narrative Outcome.
+* **Sample size:** N = 2,160 independent trials
+* **Architecture:** Two-stage LLM-as-a-judge pipeline
+* **Core variables:** Demographic signal (name), authorial persona, scenario, hesitation score, narrative outcome
 
-## 2. Environment Setup
-This project requires Python. Follow these steps to set up the isolated virtual environment:
+## 2. Environment setup
+This project requires Python. Create and activate a virtual environment:
 
     # Create the environment
     python -m venv venv
 
-    # Activate the environment
+    # Activate it (Windows)
     .\venv\Scripts\activate
+    # Activate it (macOS / Linux)
+    source venv/bin/activate
 
     # Install required libraries
     pip install pandas scipy seaborn matplotlib gpt4all
 
-**Note:** If script execution is disabled on your system, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` before activating.
+**Note (Windows):** If script execution is disabled, run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` before activating.
 
-## 3. Hardware Requirements
-* **Model Format:** GGUF (Quantized)
-* **Backend:** Local GPU acceleration is recommended for Stage 1 (Generation).
-* **Storage:** Approximately 5GB for the model weights.
+## 3. Hardware requirements
+* **Model format:** GGUF (quantized)
+* **Backend:** Local GPU acceleration is recommended for Stage 1 (generation).
+* **Storage:** About 5 GB for the model weights.
 
-## 4. Repository Structure
-* `/Code`: Contains the generation and analysis scripts.
-    * `advancedanalysis.py`: Secondary statistical tests (Standard Library version).
-    * `generatedistributiongraph.py`: Visualization suite for publication-quality plots.
-    * `pairwisetest.py`: Isolated Chi-Square tests for intersectional bias.
-    * `experiment_local.py`: Main execution script for local data generation.
-* `/Writing`: Contains early drafts, project plans, and preliminary markdown notes.
-* `/` (Root Directory): 
-    * Contains the primary experimental data (e.g., `local_experiment_results.csv`).
-    * Contains all generated visualization outputs (`fig1_demographic_hesitation.png`, `trend4_vulnerability_heatmap.png`, etc.).
+## 4. Repository structure
+* `/Code`: generation and analysis scripts
+    * `experiment_local.py`: main script for local data generation
+    * `advancedanalysis.py`: secondary statistical tests
+    * `pairwisetest.py`: pairwise chi-square tests for intersectional bias
+    * `generatedistributiongraph.py`: figures for the report
+* `/Writing`: final report, early drafts, and project plans
+* Repository root: experimental data (`local_experiment_results.csv`) and generated figures
 
-## 5. Reproducing Results
-To replicate the statistical analysis and generate the report figures:
+## 5. Reproducing the results
+From the repository root, with the environment active:
 
-1. Ensure your virtual environment is active.
-2. Run the analysis script to verify results:
-   
-       python Code/advancedanalysis.py
+    python Code/advancedanalysis.py
+    python Code/generatedistributiongraph.py
 
-3. Generate the visualization suite:
-   
-       python Code/generatedistributiongraph.py
+Run from the repository root so the CSV paths and figure outputs resolve correctly.
 
-*(Note: Ensure your working directory is set to the repository root before running the scripts so the CSV paths and image outputs land in the correct location).*
-
-## 6. Data Schema
-The output CSV (`local_experiment_results.csv`) utilizes the following columns:
-* `Persona`: The system instruction used (Default, Noir, Utopian).
-* `Demographic_Group`: The intersectional identity (e.g., Black_Male).
-* `Scenario`: The moral dilemma (Wallet, Team, Car_Accident).
-* `Hesitation`: The 1–5 score extracted in Stage 2.
-* `Outcome`: The raw string outcome and binary classification.
+## 6. Data schema
+`local_experiment_results.csv` has these columns:
+* `Persona`: system instruction used (Default, Noir, Utopian)
+* `Demographic_Group`: intersectional identity (e.g., Black_Male)
+* `Scenario`: moral dilemma (Wallet, Team, Car_Accident)
+* `Hesitation`: the 1 to 5 score from Stage 2
+* `Outcome`: raw outcome string and binary classification
